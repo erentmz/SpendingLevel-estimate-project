@@ -62,7 +62,7 @@ def load_model(filename):
 
 
 if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = load_and_preprocess_data('customer_table1k.csv')
+    X_train, X_test, y_train, y_test = load_and_preprocess_data('data/customer_table1k.csv')
     model_pipeline = create_pipeline()
     trained_model = train_and_evaluate_model(model_pipeline, X_train, X_test, y_train, y_test)
     save_model(trained_model, 'models/trained_svm_model.pkl')

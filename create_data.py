@@ -29,29 +29,47 @@ jobs = {
     'high': high_income_jobs
 }
 
+income_ranges = {
+    'low': (15000, 45000),
+    'medium': (46000, 90000),
+    'high': (91000, 150000)
+}
+
+job_factors = {
+    'low': 1.0,
+    'medium': 1.2,
+    'high': 1.4
+}
+
+
+def calculate_age_factor(age):
+    if age < 25:
+        return 0.9
+    elif 25 <= age < 40:
+        return 1.1
+    else:
+        return 1.0
+
+
+def calculate_spending_score(age, income, job_level):
+    age_factor = calculate_age_factor(age)
+    income_factor = (income - income_ranges[job_level][0]) / (income_ranges[job_level][1] - income_ranges[job_level][0])
+    job_factor = job_factors[job_level]
+
+    base_score = 30 + (40 * income_factor)
+
+    spending_score = int(base_score * age_factor * job_factor)
+    return min(100, spending_score)
+
 
 def create_customers(num_customers):
     customer_list = []
     for i in range(1, num_customers + 1):
-
-        income_level = np.random.choice(['low', 'medium', 'high'], p=[0.3, 0.5, 0.2])
-
+        income_level = np.random.choice(['low', 'medium', 'high'], p=[0.25, 0.5, 0.25])
         job = random.choice(jobs[income_level])
-
-        if income_level == 'low':
-            salary = fake.random_int(min=13000, max=50000)
-        elif income_level == 'medium':
-            salary = fake.random_int(min=51000, max=88000)
-        else:
-            salary = fake.random_int(min=89000, max=150000)
-
+        salary = fake.random_int(*income_ranges[income_level])
         age = fake.random_int(min=18, max=70)
-        age_factor = 0.5 + (abs(age - 35)) / 70
-
-        income_factor = {'low': 0.9, 'medium': 1.1, 'high': 1.3}[income_level]
-
-        spending_score = int(100 * np.random.normal(loc=50, scale=15) * age_factor * income_factor)
-        spending_score = max(0, spending_score)
+        spending_score = calculate_spending_score(age, salary, income_level)
 
         customer = {
             'customerId': i,
@@ -64,17 +82,8 @@ def create_customers(num_customers):
         }
         customer_list.append(customer)
 
-    df = pd.DataFrame(customer_list)
-
-    min_score = df['spending_score'].min()
-    max_score = df['spending_score'].max()
-
-    df['spending_score'] = (df['spending_score'] - min_score) / (max_score - min_score) * 99 + 1
-    df['spending_score'] = df['spending_score'].round().astype(int)
-
-    return df
+    return pd.DataFrame(customer_list)
 
 
 data = create_customers(1000)
-
 data.to_csv('customer_table1k.csv', index=False)
