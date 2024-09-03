@@ -1,4 +1,5 @@
 import logging
+import os
 
 import pandas as pd
 from flask import Flask, render_template, request, jsonify
@@ -14,8 +15,9 @@ logging.basicConfig(filename='app.log',
 
 # Try to load the trained machine learning model
 try:
-    model = load_model('models/trained_svm_model.pkl')
-    if model is not None:
+    model_path = 'models/trained_svm_model.pkl'
+    if os.path.isfile(model_path):
+        model = load_model(model_path)
         logging.info("Model loaded successfully")
     else:
         logging.warning("Model not loaded.")
